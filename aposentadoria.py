@@ -81,23 +81,23 @@ def main(page: ft.Page):
         top_view = page.views[-1]
         page.go(top_view.route)
 
-    def aposentadoria(e):
-        try:
-            if input_genero.value == "masculino":
-                if input_categoria.value == "":
-                if int(input_idade.value) >= 65 and int(input_tempo.value) >= 15:
-                if int(input_tempo.value) >= 35:
-            else:
-
-        except ValueError:
-            txt_resultado.value = "Erro, Valor com formato inválido."
+    # def aposentadoria(e):
+    #     try:
+    #         if input_genero.value == "masculino":
+    #             if input_categoria.value == "":
+    #             if int(input_idade.value) >= 65 and int(input_tempo.value) >= 15:
+    #             if int(input_tempo.value) >= 35:
+    #         else:
+    #
+    #     except ValueError:
+    #         txt_resultado.value = "Erro, Valor com formato inválido."
         page.update()
 
 
     page.on_route_change = gerencia_rotas
     page.on_view_pop = voltar
     txt_resultado = ft.Text(value="")
-    input_idade = TextField(label="Idade atual",hint_text="Idade")
+    input_idade = ft.Slider(value=0,min=0,max=100,label="Idade")
     input_genero = ft.Dropdown(label="Insira o Gênero", width=page.window.width,
                                fill_color=Colors.RED,
                                options=[Option(key="Masc", text="Masculino"),
