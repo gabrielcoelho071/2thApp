@@ -1,7 +1,16 @@
-# app.py
 import flet as ft
+from flet import AppBar, Text, View
+from flet.core.colors import Colors
 from models_livro import Livro, db_session  # Importando o modelo e a sessão
 from sqlalchemy import select
+from sqlalchemy.orm import sessionmaker
+
+
+# Função para criar uma nova sessão
+def create_session():
+    Session = sessionmaker(bind=db_session.bind)  # Usando o bind da sessão existente
+    return Session()
+
 
 def main(page: ft.Page):
     # Configuração da página
@@ -17,45 +26,86 @@ def main(page: ft.Page):
             msg_error.open = True
             page.update()
         else:
-            obj_livro = Livro(
-                livro=input_livro.value,
-                autor=input_autor.value,
-                categoria=input_categoria.value,
-                descricao=input_descricao.value
-            )
-            obj_livro.save()  # Salva no banco
-            input_livro.value = ""
-            input_autor.value = ""
-            input_categoria.value = ""
-            input_descricao.value = ""
-            page.overlay.append(msg_sucesso)
-            msg_sucesso.open = True
-            page.update()
+            # Criando uma nova sessão
+            session = create_session()
 
+            try:
+                obj_livro = Livro(
+                    livro=input_livro.value,
+                    autor=input_autor.value,
+                    categoria=input_categoria.value,
+                    descricao=input_descricao.value
+                )
+                session.add(obj_livro)  # Adiciona o objeto à sessão
+                session.commit()  # Salva no banco de dados
+
+                # Limpando os campos após salvar
+                input_livro.value = ""
+                input_autor.value = ""
+                input_categoria.value = ""
+                input_descricao.value = ""
+                page.overlay.append(msg_sucesso)
+                msg_sucesso.open = True
+                page.update()
+
+            except Exception as e:
+                print(f"Erro ao salvar as informações: {e}")
+                session.rollback()
+            finally:
+                session.close()  # Fechar a sessão
 
     def exibir_lista(e):
         lv_livros.controls.clear()
-        livros = db_session.execute(select(Livro)).scalars().all()
 
-        for livro in livros:
-            lv_livros.controls.append(
-                ft.ListTile(
-                    leading=ft.Icon(ft.Icons.BOOK),
-                    title=ft.Text(f"Livro: {livro.livro}"),
-                    subtitle=ft.Text(f"Autor: {livro.autor}"),
-                    trailing=ft.PopupMenuButton(
-                        icon=ft.Icons.MORE_VERT,
-                        items=[ft.PopupMenuItem(text="Detalhes", on_click=lambda _, l=livro: exibir_detalhes(l))]
+        # Criando uma nova sessão
+        session = create_session()
+
+        try:
+            # Carregando os livros do banco de dados
+            livros = session.execute(select(Livro)).scalars().all()
+
+            for livro in livros:
+                lv_livros.controls.append(
+                    ft.ListTile(
+                        leading=ft.Icon(ft.Icons.BOOK),
+                        title=ft.Text(f"Livro: {livro.livro}"),
+                        subtitle=ft.Text(f"Autor: {livro.autor}"),
+                        trailing=ft.PopupMenuButton(
+                            icon=ft.Icons.MORE_VERT,
+                            items=[
+                                ft.PopupMenuItem(text="Detalhes", on_click=lambda _, l=livro: exibir_detalhes(l)),
+                                ft.PopupMenuItem(text="Excluir", on_click=lambda _, l=livro: excluir_livro(l, e))
+                            ],
+                        )
                     )
                 )
-            )
-        page.update()
+            page.update()
+
+        except Exception as e:
+            print(f"Erro ao exibir a lista de livros: {e}")
+        finally:
+            session.close()  # Fechar a sessão
 
     # Função para exibir detalhes do livro
     def exibir_detalhes(livro):
         txt_categoria.value = livro.categoria
         txt_descricao.value = livro.descricao
         page.go("/detalhes")
+
+    # Função para excluir livro
+    def excluir_livro(livro, e):
+        # Criando uma nova sessão
+        session = create_session()
+
+        try:
+            session.delete(livro)  # Exclui o livro do banco de dados
+            session.commit()  # Confirma a exclusão no banco de dados
+            exibir_lista(e)  # Atualiza a lista na interface após a exclusão
+        except Exception as e:
+            print(f"Erro ao excluir livro: {e}")
+            session.rollback()
+        finally:
+            session.close()  # Fechar a sessão
 
     # Função para gerenciar rotas
     def gerencia_rotas(e):
@@ -135,6 +185,7 @@ def main(page: ft.Page):
     page.on_route_change = gerencia_rotas
     page.on_view_pop = voltar
     page.go(page.route)
+
 
 # Iniciando o aplicativo Flet
 ft.app(main)
