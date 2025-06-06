@@ -134,7 +134,7 @@ def main(page: ft.Page):
         )
 
         # Tela de Livros
-        if page.route == "/livros":
+        if page.route == "/livros" or page.route == "/detalhes":
             exibir_lista(e)
             page.views.append(
                 ft.View(
