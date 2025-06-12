@@ -20,7 +20,7 @@ def index():
     """
     return redirect('/livros')
 
-@app.route("/livros", methods=['POST'])
+@app.route("/livros_post", methods=['POST'])
 def post_livros():
     db = db_session()
     try:
@@ -45,7 +45,7 @@ def post_livros():
     except ValueError as e:
         return jsonify({"mensagem": str(e)}), 400
 
-@app.route('/livros', methods=['GET'])
+@app.route('/livros_get', methods=['GET'])
 def get_livros():
     db = db_session()
     try:
@@ -54,7 +54,7 @@ def get_livros():
         for livro in lista:
             resultados.append(livro.serialize())
         db.close()
-        return jsonify(resultados)
+        return jsonify(resultados), 200
     except ValueError:
         return jsonify({"mensagem": "Formato inválido."}), 400
     except TypeError:
@@ -62,7 +62,7 @@ def get_livros():
     except Exception as e:
         return jsonify({"mensagem": str(e)}), 500
 
-@app.route('/livros/<int:id_livro>', methods=['PUT'])
+@app.route('/livros_put/<int:id_livro>', methods=['PUT'])
 def put_livro(id_livro):
     db = db_session()
     try:
@@ -79,7 +79,7 @@ def put_livro(id_livro):
         ISBN = dados_livro["categoria"]
         resumo = dados_livro["descricao"]
 
-        livro.titulo = titulo
+        livro.livro = titulo
         livro.autor = autor
         livro.ISBN = ISBN
         livro.resumo = resumo
@@ -87,7 +87,7 @@ def put_livro(id_livro):
         # Save changes to the database
         livro.save()
         db.close()
-        return jsonify({"mensagem": "Livro atualizado com sucesso!"})
+        return jsonify({"mensagem": "Livro atualizado com sucesso!"}), 200
     except ValueError:
         return jsonify({"mensagem": "Formato inválido."}), 400
     except TypeError:

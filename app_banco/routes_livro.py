@@ -22,7 +22,7 @@ def main(page: ft.Page):
 
     # Função que retorna somente o JSON da rota
     def get_info():
-        url = f"http://10.135.232.6:5000/livros"
+        url = f"http://10.135.232.6:5000/livros_get"
 
         resposta = requests.get(url)
 
@@ -31,8 +31,72 @@ def main(page: ft.Page):
             return resposta.json()
         else:
             return resposta.json()
-    def post_info():
-        url = f"http://10.135.232.6:5000/livros"
+
+    def post_info(livros, autor, categoria, descricao):
+
+        url = "http://10.135.232.6:5000/livros_post"
+        livro = {
+            "livro": livros,
+            "autor": autor,
+            "categoria": categoria,
+            "descricao": descricao,
+        }
+
+        resposta = requests.post(url, json=livro)
+        print("Status:", resposta.status_code)
+        print("Texto bruto:", repr(resposta.text))
+        try:
+            print("JSON:", resposta.json())
+        except Exception as e:
+            print("Erro ao parsear JSON da resposta:", e)
+
+    def put_info(id_, livros, autor, categoria, descricao):
+        url = f"http://10.135.232.6:5000/livros_put/{id_}"
+        livro_atualizado = {
+            "livro": livros,
+            "autor": autor,
+            "categoria": categoria,
+            "descricao": descricao,
+        }
+        print(livro_atualizado)
+        antigo = requests.get(url)
+        resposta = requests.put(url, json=livro_atualizado)
+        print("Status:", resposta.status_code)
+        print("Texto bruto:", repr(resposta.text))
+        try:
+            print("JSON:", resposta.json())
+        except Exception as e:
+            print("Erro ao parsear JSON da resposta:", e)
+
+    # Função para salvar informações do livro
+    def editar_informacoes(id):
+        if input_livro.value == "" or input_autor.value == "" or input_categoria.value == "" or input_descricao.value == "":
+            page.overlay.append(msg_error)
+            msg_error.open = True
+            page.update()
+        else:
+            # Criando uma nova sessão
+            session = create_session()
+
+            try:
+                print("helloooo")
+                print(id, input_livro.value, input_autor.value, input_categoria.value, input_descricao.value)
+                put_info(id, input_livro.value, input_autor.value, input_categoria.value, input_descricao.value)
+
+                # Limpando os campos após salvar
+                input_livro.value = ""
+                input_autor.value = ""
+                input_categoria.value = ""
+                input_descricao.value = ""
+                page.overlay.append(msg_sucesso)
+                msg_sucesso.open = True
+                page.update()
+
+            except Exception as e:
+                print(f"Erro ao salvar as informações: {e}")
+                session.rollback()
+            finally:
+                session.close()  # Fechar a sessão
 
     # Função para salvar informações do livro
     def salvar_informacoes(e):
@@ -45,14 +109,7 @@ def main(page: ft.Page):
             session = create_session()
 
             try:
-                obj_livro = Livro(
-                    livro=input_livro.value,
-                    autor=input_autor.value,
-                    categoria=input_categoria.value,
-                    descricao=input_descricao.value
-                )
-                session.add(obj_livro)  # Adiciona o objeto à sessão
-                session.commit()  # Salva no banco de dados
+                post_info(input_livro.value, input_autor.value, input_categoria.value, input_descricao.value)
 
                 # Limpando os campos após salvar
                 input_livro.value = ""
@@ -89,7 +146,9 @@ def main(page: ft.Page):
                             icon=ft.Icons.MORE_VERT,
                             items=[
                                 ft.PopupMenuItem(text="Detalhes", on_click=lambda _, l=livro: exibir_detalhes(l)),
+                                ft.PopupMenuItem(text="editar", on_click=lambda _, l=livro: exibir_editar(l)),
                                 ft.PopupMenuItem(text="Excluir", on_click=lambda _, l=livro: excluir_livro(l, e))
+
                             ],
                         )
                     )
@@ -106,6 +165,15 @@ def main(page: ft.Page):
         txt_categoria.value = livro["categoria"]
         txt_descricao.value = livro["descricao"]
         page.go("/detalhes")
+
+    def exibir_editar(livro):
+        print("valores:", livro["livro"], livro["autor"], livro["categoria"], livro["descricao"])
+        txt_id.value = livro["id_livro"]
+        input_livro.value = livro["livro"]
+        input_autor.value = livro["autor"]
+        input_categoria.value = livro["categoria"]
+        input_descricao.value = livro["descricao"]
+        page.go("/editar")
 
     # Função para excluir livro
     def excluir_livro(livro, e):
@@ -132,6 +200,12 @@ def main(page: ft.Page):
                 "/",
                 [
                     ft.AppBar(title=ft.Text("Home"), bgcolor=ft.Colors.PRIMARY_CONTAINER),
+                    ft.Image(
+                        src="https://cdn-icons-png.flaticon.com/256/9043/9043296.png",  # pode ser URL ou caminho local
+                        width=300,
+                        height=200,
+                        fit=ft.ImageFit.CONTAIN
+                    ),
                     input_livro,
                     input_autor,
                     input_categoria,
@@ -149,7 +223,7 @@ def main(page: ft.Page):
         )
 
         # Tela de Livros
-        if page.route == "/livros" or page.route == "/detalhes":
+        if page.route == "/livros" or page.route == "/editar" or page.route == "/detalhes":
             exibir_lista(e)
             page.views.append(
                 ft.View(
@@ -157,6 +231,29 @@ def main(page: ft.Page):
                     [
                         ft.AppBar(title=ft.Text("Lista de Livros"), bgcolor=ft.Colors.SECONDARY_CONTAINER),
                         lv_livros
+                    ],
+                )
+            )
+
+        if page.route == "/editar":
+            page.views.append(
+                ft.View(
+                    "/editar",
+                    [
+                        ft.AppBar(title=ft.Text("Editar livro"), bgcolor=ft.Colors.SECONDARY_CONTAINER),
+                        txt_id,
+                        input_livro,
+                        input_autor,
+                        input_categoria,
+                        input_descricao,
+                        ft.ElevatedButton(
+                            text="Salvar",
+                            on_click=lambda _: editar_informacoes(int(txt_id.value))
+                        ),
+                        ft.ElevatedButton(
+                            text="Exibir Lista",
+                            on_click=lambda _: page.go("/livros")
+                        )
                     ],
                 )
             )
@@ -193,6 +290,7 @@ def main(page: ft.Page):
 
     lv_livros = ft.ListView(height=500, spacing=1, divider_thickness=1)
 
+    txt_id = ft.Text("", size=15, weight=ft.FontWeight.W_400)
     txt_categoria = ft.Text("", size=15, weight=ft.FontWeight.W_400)
     txt_descricao = ft.Text("", size=15, weight=ft.FontWeight.W_400)
 
