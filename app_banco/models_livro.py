@@ -30,7 +30,7 @@ class Livro(Base):
         db_session.delete(self)
         db_session.commit()
 
-    def serialize_livro(self):
+    def serialize(self):
         return {
             "id_livro": self.id_livro,
             "livro": self.livro,

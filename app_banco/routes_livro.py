@@ -4,6 +4,7 @@ from flet.core.colors import Colors
 from models_livro import Livro, db_session  # Importando o modelo e a sessão
 from sqlalchemy import select
 from sqlalchemy.orm import sessionmaker
+import requests
 
 
 # Função para criar uma nova sessão
@@ -18,6 +19,20 @@ def main(page: ft.Page):
     page.theme_mode = ft.ThemeMode.DARK
     page.window.width = 400
     page.window.height = 700
+
+    # Função que retorna somente o JSON da rota
+    def get_info():
+        url = f"http://10.135.232.6:5000/livros"
+
+        resposta = requests.get(url)
+
+        if resposta.status_code == 200:
+            print("Info Livros:", resposta.json())
+            return resposta.json()
+        else:
+            return resposta.json()
+    def post_info():
+        url = f"http://10.135.232.6:5000/livros"
 
     # Função para salvar informações do livro
     def salvar_informacoes(e):
@@ -62,14 +77,14 @@ def main(page: ft.Page):
 
         try:
             # Carregando os livros do banco de dados
-            livros = session.execute(select(Livro)).scalars().all()
+            dados = get_info()
 
-            for livro in livros:
+            for livro in dados:
                 lv_livros.controls.append(
                     ft.ListTile(
                         leading=ft.Icon(ft.Icons.BOOK),
-                        title=ft.Text(f"Livro: {livro.livro}"),
-                        subtitle=ft.Text(f"Autor: {livro.autor}"),
+                        title=ft.Text(f"Livro: {livro["livro"]}"),
+                        subtitle=ft.Text(f"Autor: {livro["autor"]}"),
                         trailing=ft.PopupMenuButton(
                             icon=ft.Icons.MORE_VERT,
                             items=[
@@ -88,8 +103,8 @@ def main(page: ft.Page):
 
     # Função para exibir detalhes do livro
     def exibir_detalhes(livro):
-        txt_categoria.value = livro.categoria
-        txt_descricao.value = livro.descricao
+        txt_categoria.value = livro["categoria"]
+        txt_descricao.value = livro["descricao"]
         page.go("/detalhes")
 
     # Função para excluir livro
