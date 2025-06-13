@@ -20,7 +20,7 @@ def index():
     """
     return redirect('/livros')
 
-@app.route("/livros_post", methods=['POST'])
+@app.route("/livros", methods=['POST'])
 def post_livros():
     db = db_session()
     try:
@@ -45,7 +45,7 @@ def post_livros():
     except ValueError as e:
         return jsonify({"mensagem": str(e)}), 400
 
-@app.route('/livros_get', methods=['GET'])
+@app.route('/livros', methods=['GET'])
 def get_livros():
     db = db_session()
     try:
@@ -62,7 +62,7 @@ def get_livros():
     except Exception as e:
         return jsonify({"mensagem": str(e)}), 500
 
-@app.route('/livros_put/<int:id_livro>', methods=['PUT'])
+@app.route('/livros/<int:id_livro>', methods=['PUT'])
 def put_livro(id_livro):
     db = db_session()
     try:

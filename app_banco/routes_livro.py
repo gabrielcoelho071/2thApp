@@ -22,7 +22,7 @@ def main(page: ft.Page):
 
     # Função que retorna somente o JSON da rota
     def get_info():
-        url = f"http://10.135.232.6:5000/livros_get"
+        url = f"http://10.135.232.6:5000/livros"
 
         resposta = requests.get(url)
 
@@ -34,7 +34,7 @@ def main(page: ft.Page):
 
     def post_info(livros, autor, categoria, descricao):
 
-        url = "http://10.135.232.6:5000/livros_post"
+        url = "http://10.135.232.6:5000/livros"
         livro = {
             "livro": livros,
             "autor": autor,
@@ -51,7 +51,7 @@ def main(page: ft.Page):
             print("Erro ao parsear JSON da resposta:", e)
 
     def put_info(id_, livros, autor, categoria, descricao):
-        url = f"http://10.135.232.6:5000/livros_put/{id_}"
+        url = f"http://10.135.232.6:5000/livros/{id_}"
         livro_atualizado = {
             "livro": livros,
             "autor": autor,
@@ -67,6 +67,20 @@ def main(page: ft.Page):
             print("JSON:", resposta.json())
         except Exception as e:
             print("Erro ao parsear JSON da resposta:", e)
+
+    def delete_info(id_):
+
+        url = f"http://10.135.232.6:5000/livros/{id_}"
+
+        resposta = requests.delete(url)
+
+        if resposta.status_code == 200:
+            print("Info Livros:", resposta.json())
+            return resposta.json()
+        else:
+            return resposta.json()
+
+
 
     # Função para salvar informações do livro
     def editar_informacoes(id):
@@ -126,6 +140,10 @@ def main(page: ft.Page):
             finally:
                 session.close()  # Fechar a sessão
 
+    def deletar_informacoes(id_):
+        delete_info(id_)
+
+
     def exibir_lista(e):
         lv_livros.controls.clear()
 
@@ -147,7 +165,7 @@ def main(page: ft.Page):
                             items=[
                                 ft.PopupMenuItem(text="Detalhes", on_click=lambda _, l=livro: exibir_detalhes(l)),
                                 ft.PopupMenuItem(text="editar", on_click=lambda _, l=livro: exibir_editar(l)),
-                                ft.PopupMenuItem(text="Excluir", on_click=lambda _, l=livro: excluir_livro(l, e))
+                                ft.PopupMenuItem(text="Excluir", on_click=lambda _, l=livro: delete_info(l["id_livro"]))
 
                             ],
                         )
@@ -175,20 +193,6 @@ def main(page: ft.Page):
         input_descricao.value = livro["descricao"]
         page.go("/editar")
 
-    # Função para excluir livro
-    def excluir_livro(livro, e):
-        # Criando uma nova sessão
-        session = create_session()
-
-        try:
-            session.delete(livro)  # Exclui o livro do banco de dados
-            session.commit()  # Confirma a exclusão no banco de dados
-            exibir_lista(e)  # Atualiza a lista na interface após a exclusão
-        except Exception as e:
-            print(f"Erro ao excluir livro: {e}")
-            session.rollback()
-        finally:
-            session.close()  # Fechar a sessão
 
     # Função para gerenciar rotas
     def gerencia_rotas(e):
@@ -215,14 +219,19 @@ def main(page: ft.Page):
                     input_autor,
                     input_categoria,
                     input_descricao,
-                    ft.ElevatedButton(
-                        text="Salvar",
-                        on_click=lambda _: salvar_informacoes(e)
-                    ),
-                    ft.ElevatedButton(
-                        text="Exibir Lista",
-                        on_click=lambda _: page.go("/livros")
+                    ft.Row(
+                        controls=[
+                            ft.ElevatedButton(
+                                text="Salvar",
+                                on_click=lambda _: salvar_informacoes(e)
+                            ),
+                            ft.ElevatedButton(
+                                text="Exibir Lista",
+                                on_click=lambda _: page.go("/livros")
+                            )
+                        ]
                     )
+
                 ],
             )
         )
@@ -251,13 +260,17 @@ def main(page: ft.Page):
                         input_autor,
                         input_categoria,
                         input_descricao,
-                        ft.ElevatedButton(
-                            text="Salvar",
-                            on_click=lambda _: editar_informacoes(int(txt_id.value))
-                        ),
-                        ft.ElevatedButton(
-                            text="Exibir Lista",
-                            on_click=lambda _: page.go("/livros")
+                        ft.Row(
+                            controls=[
+                                ft.ElevatedButton(
+                                    text="Salvar",
+                                    on_click=lambda _: editar_informacoes(int(txt_id.value))
+                                ),
+                                ft.ElevatedButton(
+                                    text="Exibir Lista",
+                                    on_click=lambda _: page.go("/livros")
+                                )
+                            ]
                         )
                     ],
                 )
