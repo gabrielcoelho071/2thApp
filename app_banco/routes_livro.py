@@ -200,11 +200,16 @@ def main(page: ft.Page):
                 "/",
                 [
                     ft.AppBar(title=ft.Text("Home"), bgcolor=ft.Colors.PRIMARY_CONTAINER),
-                    ft.Image(
-                        src="https://cdn-icons-png.flaticon.com/256/9043/9043296.png",  # pode ser URL ou caminho local
-                        width=300,
-                        height=200,
-                        fit=ft.ImageFit.CONTAIN
+                    ft.Container(
+                        alignment=ft.alignment.center,
+                        padding=10,
+                        content=ft.Image(
+                            src="https://cdn-icons-png.flaticon.com/256/9043/9043296.png",
+                            # pode ser URL ou caminho local
+                            width=300,
+                            height=200,
+                            fit=ft.ImageFit.CONTAIN
+                        ),
                     ),
                     input_livro,
                     input_autor,
