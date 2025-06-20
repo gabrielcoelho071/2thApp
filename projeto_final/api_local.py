@@ -2,7 +2,7 @@ from flask import Flask, jsonify, request, redirect
 from flask_pydantic_spec import FlaskPydanticSpec
 from sqlalchemy.exc import IntegrityError
 
-from models_local import *
+from models_livro import *
 from sqlalchemy import select
 
 app = Flask(__name__)
@@ -150,23 +150,6 @@ def put_livro(id_livro):
     finally:
         db_session.close()
 
-@app.route('/livros/<int:id_livro>', methods=['DELETE'])
-def delete_livro(id_livro):
-    db_session = local_session()
-    try:
-        var_livro = select(Livro).where(Livro.id_livro == id_livro)
-        var_livro = db_session.execute(var_livro).scalar()
-        var_livro.delete(db_session)
-        return jsonify({"mensagem": "Livro deletado com sucesso!"})
-    except ValueError:
-        return jsonify({"mensagem": "Formato inválido."}), 400
-    except TypeError:
-        return jsonify({'result': 'Error. Integrity Error (faltam informações ou informações corretas) '}), 400
-    except Exception as e:
-        return jsonify({"mensagem": str(e)}), 500
-    finally:
-        db_session.close()
-
 @app.route('/usuarios', methods=['POST'])
 def post_usuario():
     """
@@ -186,14 +169,15 @@ def post_usuario():
         dados_usuario = request.get_json()
         # Captura os valores dos campos do formulário
         nome = dados_usuario['nome']
+        email = dados_usuario['email']
         CPF = dados_usuario["CPF"]
         endereco = dados_usuario["endereco"]
         cpf = str(CPF)
-        if not nome or not cpf or not endereco or len(cpf) != 11:
+        if not nome or not cpf or not email or not endereco or len(cpf) != 11:
             return jsonify({'result': 'Error. Integrity Error (faltam informações) '}), 400
         else:
             cpf_f = '{0}.{1}.{2}-{3}'.format(cpf[:3], cpf[3:6], cpf[6:9], cpf[9:])
-            post = Usuario(nome=nome, CPF=cpf_f, endereco=endereco)
+            post = Usuario(nome=nome, email=email, CPF=cpf_f, endereco=endereco)
             post.save(db_session)
             db_session.close()
             return jsonify({'mensagem': 'Usuario criado com sucesso!'}), 200
@@ -205,9 +189,6 @@ def post_usuario():
         return jsonify({'mensagem': 'Error. Integrity Error (faltam informações ou informações corretas) '}), 400
     except Exception as e:
         return jsonify({"mensagem": str(e)}), 500
-    finally:
-        db_session.close()
-
 @app.route('/usuarios', methods=['GET'])
 def get_usuario():
     """
@@ -261,10 +242,12 @@ def put_usuario(id_usuario):
         dados_usuario = request.get_json()
         # Captura os valores dos campos do formulário
         nome = dados_usuario['nome']
+        email = dados_usuario['email']
         CPF = dados_usuario["CPF"]
         endereco = dados_usuario["endereco"]
 
         usuario.nome = nome
+        usuario.email = email
         usuario.CPF = CPF
         usuario.endereco = endereco
 
@@ -275,24 +258,6 @@ def put_usuario(id_usuario):
         return jsonify({"mensagem": "Formato inválido."}), 400
     except TypeError:
         return jsonify({'mensagem': 'Error. (faltam informações ou informações corretas)'}), 400
-    except Exception as e:
-        return jsonify({"mensagem": str(e)}), 500
-    finally:
-        db_session.close()
-
-@app.route('/usuarios/<int:id_usuario>', methods=['DELETE'])
-def delete_usuario(id_usuario):
-    db_session = local_session()
-    try:
-        var_usuario = select(Usuario).where(Usuario.id_usuario == id_usuario)
-        var_usuario = db_session.execute(var_usuario).scalar()
-        var_usuario.delete(db_session)
-
-        return jsonify({"mensagem": "usuario deletado com sucesso!"})
-    except ValueError:
-        return jsonify({"mensagem": "Formato inválido."}), 400
-    except TypeError:
-        return jsonify({'result': 'Error. Integrity Error (faltam informações ou informações corretas) '}), 400
     except Exception as e:
         return jsonify({"mensagem": str(e)}), 500
     finally:
@@ -447,24 +412,5 @@ def put_emprestimo(id_emprestimo):
     finally:
         db_session.close()
 
-
-@app.route('/emprestimos/<int:id_emprestimo>', methods=['DELETE'])
-def delete_emprestimo(id_emprestimo):
-    db_session = local_session()
-    try:
-        var_emprestimo = select(Emprestimo).where(Emprestimo.id_emprestimo == id_emprestimo)
-        var_emprestimo = db_session.execute(var_emprestimo).scalar()
-        var_emprestimo.delete(db_session)
-
-        return jsonify({"mensagem": "emprestimo deletado com sucesso!"})
-    except ValueError:
-        return jsonify({"mensagem": "Formato inválido."}), 400
-    except TypeError:
-        return jsonify({'result': 'Error. Integrity Error (faltam informações ou informações corretas) '}), 400
-    except Exception as e:
-        return jsonify({"mensagem": str(e)}), 500
-    finally:
-        db_session.close()
-
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0", port=5000)
