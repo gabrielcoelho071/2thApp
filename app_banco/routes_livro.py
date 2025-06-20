@@ -22,7 +22,7 @@ def main(page: ft.Page):
 
     # Função que retorna somente o JSON da rota
     def get_info():
-        url = f"http://10.135.232.6:5000/livros"
+        url = f"http://192.168.0.19:5000/livros"
 
         resposta = requests.get(url)
 
@@ -34,7 +34,7 @@ def main(page: ft.Page):
 
     def post_info(livros, autor, categoria, descricao):
 
-        url = "http://10.135.232.6:5000/livros"
+        url = "http://192.168.0.19:5000/livros"
         livro = {
             "livro": livros,
             "autor": autor,
@@ -51,7 +51,7 @@ def main(page: ft.Page):
             print("Erro ao parsear JSON da resposta:", e)
 
     def put_info(id_, livros, autor, categoria, descricao):
-        url = f"http://10.135.232.6:5000/livros/{id_}"
+        url = f"http://192.168.0.19:5000/livros/{id_}"
         livro_atualizado = {
             "livro": livros,
             "autor": autor,
@@ -70,7 +70,7 @@ def main(page: ft.Page):
 
     def delete_info(id_):
 
-        url = f"http://10.135.232.6:5000/livros/{id_}"
+        url = f"http://192.168.0.19:5000/livros/{id_}"
 
         resposta = requests.delete(url)
 
@@ -80,7 +80,9 @@ def main(page: ft.Page):
         else:
             return resposta.json()
 
-
+    def excluir_livro(livro_id):
+        delete_info(livro_id)
+        exibir_lista(None)  # Atualiza a lista após excluir
 
     # Função para salvar informações do livro
     def editar_informacoes(id):
@@ -140,9 +142,6 @@ def main(page: ft.Page):
             finally:
                 session.close()  # Fechar a sessão
 
-    def deletar_informacoes(id_):
-        delete_info(id_)
-
 
     def exibir_lista(e):
         lv_livros.controls.clear()
@@ -165,7 +164,7 @@ def main(page: ft.Page):
                             items=[
                                 ft.PopupMenuItem(text="Detalhes", on_click=lambda _, l=livro: exibir_detalhes(l)),
                                 ft.PopupMenuItem(text="editar", on_click=lambda _, l=livro: exibir_editar(l)),
-                                ft.PopupMenuItem(text="Excluir", on_click=lambda _, l=livro: delete_info(l["id_livro"]))
+                                ft.PopupMenuItem(text="Excluir", on_click=lambda _, l=livro: excluir_livro(l["id_livro"]))
 
                             ],
                         )
