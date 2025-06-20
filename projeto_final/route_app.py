@@ -112,7 +112,9 @@ def main(page: ft.Page):
                                     width=320,
                                     on_click=lambda _: page.go("/sign_in")
                                 )
-                            ]
+                            ],
+                            alignment=ft.MainAxisAlignment.CENTER,
+                            horizontal_alignment=ft.CrossAxisAlignment.CENTER
                         )
                     ),
                 ],
