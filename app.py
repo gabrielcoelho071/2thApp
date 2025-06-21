@@ -121,15 +121,15 @@ def main(page: ft.Page):
                     ]
                 )
             )
-            if page.route == "/forgot_password":
-                page.views.append(
-                    ft.View(
-                        "/forgot_password",
-                        [
-                            ft.AppBar(title=ft.Text("Forgot Password"),bgcolor=ft.Colors.BLACK,color=ft.Colors.WHITE),
-                        ]
-                    )
+        if page.route == "/forgot_password":
+            page.views.append(
+                ft.View(
+                    "/forgot_password",
+                    [
+                        ft.AppBar(title=ft.Text("Forgot Password"),bgcolor=ft.Colors.BLACK,color=ft.Colors.WHITE),
+                    ]
                 )
+            )
         page.update()
 
     def voltar(e):
