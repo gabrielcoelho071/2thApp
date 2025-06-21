@@ -22,7 +22,9 @@ def main(page: ft.Page):
 
     # Função que retorna somente o JSON da rota
     def get_info(get_):
+        print(get_)
         url = f"http://192.168.0.19:5000/{get_}"
+        print(url)
 
         resposta = requests.get(url)
 
@@ -75,17 +77,17 @@ def main(page: ft.Page):
         page.go("/detalhes")
 
     def livro_exibir_editar(livro):
-        print("valores:", livro["livro"], livro["autor"], livro["ISBN"], livro["resumo"])
+        print("valores:", livro["titulo"], livro["autor"], livro["ISBN"], livro["resumo"])
         txt_id.value = livro["id_livro"]
-        input_livro.value = livro["livro"]
+        input_titulo.value = livro["titulo"]
         input_autor.value = livro["autor"]
         input_ISBN.value = livro["ISBN"]
         input_resumo.value = livro["resumo"]
-        page.go("/editar")
+        page.go("/editar_livros")
 
     # Função para salvar informações do livro
     def editar_livros(id):
-        if input_livro.value == "" or input_autor.value == "" or input_ISBN.value == "" or input_resumo.value == "":
+        if input_titulo.value == "" or input_autor.value == "" or input_ISBN.value == "" or input_resumo.value == "":
             page.overlay.append(msg_error)
             msg_error.open = True
             page.update()
@@ -95,11 +97,11 @@ def main(page: ft.Page):
 
             try:
                 print("helloooo")
-                print(id, input_livro.value, input_autor.value, input_ISBN.value, input_resumo.value)
-                put_livro(id, input_livro.value, input_autor.value, input_ISBN.value, input_resumo.value)
+                print(id, input_titulo.value, input_autor.value, input_ISBN.value, input_resumo.value)
+                put_livro(id, input_titulo.value, input_autor.value, input_ISBN.value, input_resumo.value)
 
                 # Limpando os campos após salvar
-                input_livro.value = ""
+                input_titulo.value = ""
                 input_autor.value = ""
                 input_ISBN.value = ""
                 input_resumo.value = ""
@@ -115,7 +117,7 @@ def main(page: ft.Page):
 
     # Função para salvar informações do livro
     def salvar_livros(e):
-        if input_livro.value == "" or input_autor.value == "" or input_ISBN.value == "" or input_resumo.value == "":
+        if input_titulo.value == "" or input_autor.value == "" or input_ISBN.value == "" or input_resumo.value == "":
             page.overlay.append(msg_error)
             msg_error.open = True
             page.update()
@@ -124,10 +126,10 @@ def main(page: ft.Page):
             session = create_session()
 
             try:
-                post_livro(input_livro.value, input_autor.value, input_ISBN.value, input_resumo.value)
+                post_livro(input_titulo.value, input_autor.value, input_ISBN.value, input_resumo.value)
 
                 # Limpando os campos após salvar
-                input_livro.value = ""
+                input_titulo.value = ""
                 input_autor.value = ""
                 input_ISBN.value = ""
                 input_resumo.value = ""
@@ -275,7 +277,7 @@ def main(page: ft.Page):
                     [
                         ft.AppBar(title=ft.Text("Cadastro de Livro"), bgcolor=ft.Colors.SECONDARY_CONTAINER),
                         ft.Text("Cadastrar Livro", size=20, weight=ft.FontWeight.BOLD),
-                        input_livro,
+                        input_titulo,
                         input_autor,
                         input_ISBN,
                         input_resumo,
@@ -311,7 +313,7 @@ def main(page: ft.Page):
                     [
                         ft.AppBar(title=ft.Text("Editar livro"), bgcolor=ft.Colors.SECONDARY_CONTAINER),
                         txt_id,
-                        input_livro,
+                        input_titulo,
                         input_autor,
                         input_ISBN,
                         input_resumo,
@@ -437,7 +439,7 @@ def main(page: ft.Page):
     msg_sucesso = ft.SnackBar(content=ft.Text("Livro salvo com sucesso!"), bgcolor=ft.Colors.GREEN)
     msg_error = ft.SnackBar(content=ft.Text("Todos os campos são obrigatórios!"), bgcolor=ft.Colors.RED)
 
-    input_livro = ft.TextField(label="Nome do Livro")
+    input_titulo = ft.TextField(label="Nome do Livro")
     input_autor = ft.TextField(label="Autor")
     input_ISBN = ft.TextField(label="ISBN")
     input_resumo = ft.TextField(label="Resumo", multiline=True)
