@@ -174,7 +174,7 @@ def post_usuario():
         endereco = dados_usuario["endereco"]
         cpf = str(CPF)
         if not nome or not cpf or not email or not endereco or len(cpf) != 11:
-            return jsonify({'result': 'Error. Integrity Error (faltam informações) '}), 400
+            return jsonify({'result': 'Error. Integrity Error (faltam informações) '}), 422
         else:
             cpf_f = '{0}.{1}.{2}-{3}'.format(cpf[:3], cpf[3:6], cpf[6:9], cpf[9:])
             post = Usuario(nome=nome, email=email, CPF=cpf_f, endereco=endereco)
@@ -182,11 +182,11 @@ def post_usuario():
             db_session.close()
             return jsonify({'mensagem': 'Usuario criado com sucesso!'}), 200
     except ValueError:
-        return jsonify({"mensagem": "formato invalido"})
+        return jsonify({"mensagem": "formato invalido"}),422
     except IntegrityError:
-        return jsonify({"mensagem": "CPF inválido"})
+        return jsonify({"mensagem": "CPF inválido"}), 400
     except TypeError:
-        return jsonify({'mensagem': 'Error. Integrity Error (faltam informações ou informações corretas) '}), 400
+        return jsonify({'mensagem': 'Error. Integrity Error (faltam informações ou informações corretas) '}), 422
     except Exception as e:
         return jsonify({"mensagem": str(e)}), 500
 @app.route('/usuarios', methods=['GET'])

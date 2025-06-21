@@ -179,35 +179,56 @@ def main(page: ft.Page):
     # ------------------ CRUD DO USUARIO ------------------
 
     # Funções para Usuário
-    def post_usuario(nome, email, CPF):
+    def post_usuario(nome, email, CPF, endereco):
         url = "http://192.168.0.19:5000/usuarios"
-        dados = {"nome": nome, "email": email, "CPF": CPF}
-        r = requests.post(url, json=dados);
-        print(r.status_code, r.text)
+        print(nome, email, CPF, endereco)
+        dados = {"nome": nome, "email": email, "CPF": CPF, "endereco": endereco}
+        resposta = requests.post(url, json=dados)
+        print(resposta.status_code, resposta.text)
+        if resposta.status_code == 200:
+            print("Info Livros:", resposta.json())
+            return resposta.json()
+        elif resposta.status_code == 422:
+            page.overlay.append(msg_len_error)
+            msg_len_error.open = True
+            page.update()
+            return resposta.json()
+        elif resposta.status_code == 400:
+            page.overlay.append(msg_integrity_error)
+            msg_integrity_error.open = True
+            page.update()
+            return resposta.json()
+        else:
+            page.overlay.append(msg_idk_error)
+            msg_idk_error.open = True
+            page.update()
+            return resposta.json()
 
-    def put_usuario(id_, nome, email, CPF):
+
+
+    def put_usuario(id_, nome, email, CPF, endereco):
         url = f"http://192.168.0.19:5000/usuarios/{id_}"
-        dados = {"nome": nome, "email": email, "CPF": CPF}
+        dados = {"nome": nome, "email": email, "CPF": CPF, "endereco": endereco}
         r = requests.put(url, json=dados);
         print(r.status_code, r.text)
 
     # Exibição e edição
     def usuario_exibir_detalhes(usuario):
-        txt_user_nome.value = usuario["nome"]
-        txt_user_email.value = usuario["email"]
         txt_user_cpf.value = usuario["CPF"]
-        page.go("/usuarios_detalhes")
+        txt_user_endereco.value = usuario["endereco"]
+        page.go("/usuario_detalhes")
 
     def usuario_exibir_editar(usuario):
         txt_user_id.value = usuario["id_usuario"]
         input_nome.value = usuario["nome"]
         input_email.value = usuario["email"]
         input_cpf.value = usuario["CPF"]
-        page.go("/editar_usuarios")
+        input_endereco.value = usuario["endereco"]
+        page.go("/editar_usuario")
 
     # Função para editar informações do usuario
     def editar_usuarios(id):
-        if input_nome.value == "" or input_email.value == "" or input_cpf.value == "":
+        if input_nome.value == "" or input_email.value == "" or input_cpf.value == "" or input_endereco.value == "":
             page.overlay.append(msg_error)
             msg_error.open = True
             page.update()
@@ -216,13 +237,14 @@ def main(page: ft.Page):
             session = create_session()
 
             try:
-                print(id, input_nome.value, input_email.value, input_cpf.value)
-                put_livro(id, input_nome.value, input_email.value, input_cpf.value)
+                print(id, input_nome.value, input_email.value, input_cpf.value, input_endereco.value)
+                put_livro(id, input_nome.value, input_email.value, input_cpf.value, input_endereco.value)
 
                 # Limpando os campos após salvar
                 input_nome.value = ""
                 input_email.value = ""
                 input_cpf.value = ""
+                input_endereco.value = ""
                 page.overlay.append(msg_sucesso)
                 msg_sucesso.open = True
                 page.update()
@@ -235,7 +257,7 @@ def main(page: ft.Page):
 
     # Função para salvar informações do usuario
     def salvar_usuarios(e):
-        if input_nome.value == "" or input_email.value == "" or input_cpf.value == "":
+        if input_nome.value == "" or input_email.value == "" or input_cpf.value == "" or input_endereco.value == "":
             page.overlay.append(msg_error)
             msg_error.open = True
             page.update()
@@ -244,12 +266,13 @@ def main(page: ft.Page):
             session = create_session()
 
             try:
-                post_livro(input_titulo.value, input_autor.value, input_ISBN.value, input_resumo.value)
+                post_usuario(input_nome.value, input_email.value, input_cpf.value, input_endereco.value)
 
                 # Limpando os campos após salvar
                 input_nome.value = ""
                 input_email.value = ""
                 input_cpf.value = ""
+                input_endereco.value = ""
                 page.overlay.append(msg_sucesso)
                 msg_sucesso.open = True
                 page.update()
@@ -495,7 +518,7 @@ def main(page: ft.Page):
                     ],
                 )
             )
-        # Tela de Detalhes do Livro
+        # Tela de Detalhes do usuario
         if page.route == "/livros_detalhes":
             page.views.append(
                 ft.View(
@@ -509,7 +532,7 @@ def main(page: ft.Page):
                     ],
                 )
             )
-        if page.route == "/usuarios":
+        if page.route == "/usuarios" or page.route == "/cadastrar_usuario" or page.route == "/listar_usuario":
             page.views.append(
                 ft.View(
                     "/usuarios",
@@ -535,13 +558,13 @@ def main(page: ft.Page):
                                         bgcolor=ft.Colors.BLACK,
                                         color=ft.Colors.WHITE,
                                         width=320,
-                                        on_click=lambda _: page.go("/home")),
+                                        on_click=lambda _: page.go("/listar_usuario")),
                                     ft.CupertinoButton(
                                         text="Cadastrar Usuários",
                                         bgcolor=ft.Colors.BLACK,
                                         color=ft.Colors.WHITE,
                                         width=320,
-                                        on_click=lambda _: page.go("/home")),
+                                        on_click=lambda _: page.go("/cadastrar_usuario")),
                                 ],
                                 alignment=ft.MainAxisAlignment.CENTER,
                                 horizontal_alignment=ft.CrossAxisAlignment.CENTER
@@ -555,17 +578,17 @@ def main(page: ft.Page):
                 ft.View(
                     "/cadastrar_usuario",
                     [
-                        ft.AppBar(title=ft.Text("Cadastro de Livro"), bgcolor=ft.Colors.SECONDARY_CONTAINER),
-                        ft.Text("Cadastrar Livro", size=20, weight=ft.FontWeight.BOLD),
-                        input_titulo,
-                        input_autor,
-                        input_ISBN,
-                        input_resumo,
+                        ft.AppBar(title=ft.Text("Cadastro de Usuário"), bgcolor=ft.Colors.SECONDARY_CONTAINER),
+                        ft.Text("Cadastrar Usuário", size=20, weight=ft.FontWeight.BOLD),
+                        input_nome,
+                        input_email,
+                        input_cpf,
+                        input_endereco,
                         ft.Row(
                             controls=[
                                 ft.ElevatedButton(
                                     text="Salvar",
-                                    on_click=lambda _: salvar_livros(e)
+                                    on_click=lambda _: salvar_usuarios(e)
                                 )
                             ]
                         )
@@ -573,13 +596,13 @@ def main(page: ft.Page):
                 )
             )
         if page.route == "/listar_usuario" or page.route == "/editar_usuario" or page.route == "/usuario_detalhes":
-            exibir_livro(e)
+            exibir_usuarios(e)
             page.views.append(
                 ft.View(
                     "/listar_usuario",
                     [
-                        ft.AppBar(title=ft.Text("Lista de Livros"), bgcolor=ft.Colors.SECONDARY_CONTAINER),
-                        lv_livros
+                        ft.AppBar(title=ft.Text("Lista de Usuário"), bgcolor=ft.Colors.SECONDARY_CONTAINER),
+                        lv_usuarios
                     ],
                 )
             )
@@ -588,40 +611,40 @@ def main(page: ft.Page):
                 ft.View(
                     "/editar_usuario",
                     [
-                        ft.AppBar(title=ft.Text("Editar livro"), bgcolor=ft.Colors.SECONDARY_CONTAINER),
+                        ft.AppBar(title=ft.Text("Editar Usuário"), bgcolor=ft.Colors.SECONDARY_CONTAINER),
                         ft.Container(height=10),
                         ft.Row(spacing=-2,controls=[ft.Text("Editando o id Nº "),txt_id]),
                         ft.Container(height=10),
-                        input_titulo,
-                        input_autor,
-                        input_ISBN,
-                        input_resumo,
+                        input_nome,
+                        input_email,
+                        input_cpf,
+                        input_endereco,
                         ft.Row(
                             controls=[
                                 ft.ElevatedButton(
                                     text="Salvar",
-                                    on_click=lambda _: editar_livros(int(txt_id.value))
+                                    on_click=lambda _: editar_usuarios(int(txt_id.value))
                                 ),
                                 ft.ElevatedButton(
                                     text="Exibir Lista",
-                                    on_click=lambda _: page.go("/listar_livros")
+                                    on_click=lambda _: page.go("/listar_usuario")
                                 )
                             ]
                         )
                     ],
                 )
             )
-        # Tela de Detalhes do Livro
+        # Tela de Detalhes do usuario
         if page.route == "/usuario_detalhes":
             page.views.append(
                 ft.View(
                     "/usuario_detalhes",
                     [
-                        ft.AppBar(title=ft.Text("Detalhes do Livro"), bgcolor=ft.Colors.SECONDARY_CONTAINER),
-                        ft.Text("ISBN:", size=15),
-                        txt_ISBN,
-                        ft.Text("Resumo:", size=15),
-                        txt_resumo,
+                        ft.AppBar(title=ft.Text("Detalhes do Usuário"), bgcolor=ft.Colors.SECONDARY_CONTAINER),
+                        ft.Text("Cadastro de Pessoa Física:", size=15),
+                        txt_user_cpf,
+                        ft.Text("Endereço:", size=15),
+                        txt_user_endereco,
                     ],
                 )
             )
@@ -688,12 +711,14 @@ def main(page: ft.Page):
     input_nome = ft.TextField(label="Nome do Usuário")
     input_email = ft.TextField(label="Email")
     input_cpf = ft.TextField(label="Cadastro de Pessoa Física")
+    input_endereco = ft.TextField(label="Endereço")
 
     lv_usuarios = ft.ListView(height=300)
     txt_user_id = ft.Text("", visible=False)
     txt_user_nome = ft.Text("", size=15)
     txt_user_email = ft.Text("", size=15)
     txt_user_cpf = ft.Text("", size=15)
+    txt_user_endereco = ft.Text("", size=15)
 
     # ---- CAMPOS E COMPONENTES EMPRÉSTIMOS ----
     input_e_user = ft.TextField(label="ID do Usuário")
@@ -708,6 +733,9 @@ def main(page: ft.Page):
     # ---- MENSAGENS GLOBAIS ----
     msg_sucesso = ft.SnackBar(content=ft.Text("Sucesso!"), bgcolor=ft.Colors.GREEN)
     msg_error = ft.SnackBar(content=ft.Text("Todos os campos são obrigatórios!"), bgcolor=ft.Colors.RED)
+    msg_integrity_error = ft.SnackBar(content=ft.Text("Erro, CPF já está em uso!"), bgcolor=ft.Colors.RED)
+    msg_len_error = ft.SnackBar(content=ft.Text("Erro, CPF digitado é invalido! (um CPF possui 11 dígitos)"), bgcolor=ft.Colors.RED)
+    msg_idk_error = ft.SnackBar(content=ft.Text("Erro, algo inesperado ocorreu!"), bgcolor=ft.Colors.RED)
 
     # Eventos
     page.on_route_change = gerencia_rotas
