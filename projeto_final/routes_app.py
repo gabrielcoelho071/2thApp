@@ -21,9 +21,9 @@ def main(page: ft.Page):
     page.window.height = 700
 
     # Função que retorna somente o JSON da rota
-    def get_info(get_):
-        print(get_)
-        url = f"http://192.168.0.19:5000/{get_}"
+    def get_info(endpoint):
+        print(endpoint)
+        url = f"http://192.168.0.19:5000/{endpoint}"
         print(url)
 
         resposta = requests.get(url)
@@ -34,14 +34,17 @@ def main(page: ft.Page):
         else:
             return resposta.json()
 
+
+    # ------------------ CRUD DO LIVRO ------------------
+
     def post_livro(titulo, autor, ISBN, resumo):
 
         url = "http://192.168.0.19:5000/livros"
         livro = {
             "titulo": titulo,
             "autor": autor,
-            "categoria": ISBN,
-            "descricao": resumo,
+            "ISBN": ISBN,
+            "resumo": resumo,
         }
 
         resposta = requests.post(url, json=livro)
@@ -61,10 +64,8 @@ def main(page: ft.Page):
             "resumo": resumo,
         }
         print(livro_atualizado)
-        antigo = requests.get(url)
         resposta = requests.put(url, json=livro_atualizado)
         print("Status:", resposta.status_code)
-        print("Texto bruto:", repr(resposta.text))
         try:
             print("JSON:", resposta.json())
         except Exception as e:
@@ -74,7 +75,7 @@ def main(page: ft.Page):
     def livro_exibir_detalhes(livro):
         txt_ISBN.value = livro["ISBN"]
         txt_resumo.value = livro["resumo"]
-        page.go("/detalhes")
+        page.go("/livros_detalhes")
 
     def livro_exibir_editar(livro):
         print("valores:", livro["titulo"], livro["autor"], livro["ISBN"], livro["resumo"])
@@ -85,7 +86,7 @@ def main(page: ft.Page):
         input_resumo.value = livro["resumo"]
         page.go("/editar_livros")
 
-    # Função para salvar informações do livro
+    # Função para editar informações do livro
     def editar_livros(id):
         if input_titulo.value == "" or input_autor.value == "" or input_ISBN.value == "" or input_resumo.value == "":
             page.overlay.append(msg_error)
@@ -96,7 +97,6 @@ def main(page: ft.Page):
             session = create_session()
 
             try:
-                print("helloooo")
                 print(id, input_titulo.value, input_autor.value, input_ISBN.value, input_resumo.value)
                 put_livro(id, input_titulo.value, input_autor.value, input_ISBN.value, input_resumo.value)
 
@@ -143,6 +143,7 @@ def main(page: ft.Page):
             finally:
                 session.close()  # Fechar a sessão
 
+    #Função para exibir o Livro
     def exibir_livro(e):
         lv_livros.controls.clear()
 
@@ -151,7 +152,7 @@ def main(page: ft.Page):
 
         try:
             # Carregando os livros do banco de dados
-            dados = get_info(get_="livros")
+            dados = get_info(endpoint="livros")
 
             for livro in dados:
                 lv_livros.controls.append(
@@ -174,6 +175,169 @@ def main(page: ft.Page):
             print(f"Erro ao exibir a lista de livros: {e}")
         finally:
             session.close()  # Fechar a sessão
+
+    # ------------------ CRUD DO USUARIO ------------------
+
+    # Funções para Usuário
+    def post_usuario(nome, email, CPF):
+        url = "http://192.168.0.19:5000/usuarios"
+        dados = {"nome": nome, "email": email, "CPF": CPF}
+        r = requests.post(url, json=dados);
+        print(r.status_code, r.text)
+
+    def put_usuario(id_, nome, email, CPF):
+        url = f"http://192.168.0.19:5000/usuarios/{id_}"
+        dados = {"nome": nome, "email": email, "CPF": CPF}
+        r = requests.put(url, json=dados);
+        print(r.status_code, r.text)
+
+    # Exibição e edição
+    def usuario_exibir_detalhes(usuario):
+        txt_user_nome.value = usuario["nome"]
+        txt_user_email.value = usuario["email"]
+        txt_user_cpf.value = usuario["CPF"]
+        page.go("/usuarios_detalhes")
+
+    def usuario_exibir_editar(usuario):
+        txt_user_id.value = usuario["id_usuario"]
+        input_nome.value = usuario["nome"]
+        input_email.value = usuario["email"]
+        input_cpf.value = usuario["CPF"]
+        page.go("/editar_usuarios")
+
+    # Função para editar informações do usuario
+    def editar_usuarios(id):
+        if input_nome.value == "" or input_email.value == "" or input_cpf.value == "":
+            page.overlay.append(msg_error)
+            msg_error.open = True
+            page.update()
+        else:
+            # Criando uma nova sessão
+            session = create_session()
+
+            try:
+                print(id, input_nome.value, input_email.value, input_cpf.value)
+                put_livro(id, input_nome.value, input_email.value, input_cpf.value)
+
+                # Limpando os campos após salvar
+                input_nome.value = ""
+                input_email.value = ""
+                input_cpf.value = ""
+                page.overlay.append(msg_sucesso)
+                msg_sucesso.open = True
+                page.update()
+
+            except Exception as e:
+                print(f"Erro ao salvar as informações: {e}")
+                session.rollback()
+            finally:
+                session.close()  # Fechar a sessão
+
+    # Função para salvar informações do usuario
+    def salvar_usuarios(e):
+        if input_nome.value == "" or input_email.value == "" or input_cpf.value == "":
+            page.overlay.append(msg_error)
+            msg_error.open = True
+            page.update()
+        else:
+            # Criando uma nova sessão
+            session = create_session()
+
+            try:
+                post_livro(input_titulo.value, input_autor.value, input_ISBN.value, input_resumo.value)
+
+                # Limpando os campos após salvar
+                input_nome.value = ""
+                input_email.value = ""
+                input_cpf.value = ""
+                page.overlay.append(msg_sucesso)
+                msg_sucesso.open = True
+                page.update()
+
+            except Exception as e:
+                print(f"Erro ao salvar as informações: {e}")
+                session.rollback()
+            finally:
+                session.close()  # Fechar a sessão
+
+    def exibir_usuarios(e):
+        lv_usuarios.controls.clear()
+        for usuario in get_info(endpoint="usuarios"):
+            lv_usuarios.controls.append(
+                ft.ListTile(
+                    leading=ft.Icon(ft.Icons.PERSON),
+                    title=ft.Text(f"{usuario['nome']}"),
+                    subtitle=ft.Text(f"{usuario['email']}"),
+                    trailing=ft.PopupMenuButton(
+                        icon=ft.Icons.MORE_VERT,
+                        items=[
+                            ft.PopupMenuItem(text="Detalhes", on_click=lambda _, usu=usuario: usuario_exibir_detalhes(usu)),
+                            ft.PopupMenuItem(text="Editar", on_click=lambda _, usu=usuario: usuario_exibir_editar(usu)),
+                        ],
+                    )
+                )
+            )
+        page.update()
+
+    # ------------------ CRUD DO EMPRESTIMO ------------------
+
+    # Funções para Empréstimo
+    def post_emprestimo(id_usuario, id_livro, data_inicio, data_fim):
+        url = "http://192.168.0.19:5000/emprestimos"
+        dados = {
+            "id_usuario": id_usuario,
+            "id_livro": id_livro,
+            "data_inicio": data_inicio,
+            "data_fim": data_fim
+        }
+        r = requests.post(url, json=dados);
+        print(r.status_code, r.text)
+
+    def put_emprestimo(id_, id_usuario, id_livro, data_inicio, data_fim):
+        url = f"http://192.168.0.19:5000/emprestimos/{id_}"
+        dados = {
+            "id_usuario": id_usuario,
+            "id_livro": id_livro,
+            "data_inicio": data_inicio,
+            "data_fim": data_fim
+        }
+        r = requests.put(url, json=dados);
+        print(r.status_code, r.text)
+
+    txt_emp_id = ft.Text("", visible=False)
+    txt_emp_detalhes = ft.Text("", size=15)
+
+    # Exibição e edição
+    def emprestimo_exibir_detalhes(e_):
+        txt_emp_detalhes.value = f"Usuario: {e_['id_usuario']} — Livro: {e_['id_livro']} — De: {e_['data_inicio']} Até: {e_['data_fim']}"
+        page.go("/emprestimos_detalhes")
+
+    def emprestimo_exibir_editar(e_):
+        txt_emp_id.value = e_["id_emprestimo"]
+        input_e_user.value = str(e_["id_usuario"])
+        input_e_livro.value = str(e_["id_livro"])
+        input_data_inicio.value = e_["data_inicio"]
+        input_data_fim.value = e_["data_fim"]
+        page.go("/editar_emprestimos")
+
+    def exibir_emprestimos(e):
+        lv_emprestimos.controls.clear()
+        for em_ in get_info(endpoint="emprestimos"):
+            lv_emprestimos.controls.append(
+                ft.ListTile(
+                    leading=ft.Icon(ft.Icons.SHOW_CHART),
+                    title=ft.Text(f"Emp {em_['id_emprestimo']} Usu: {em_['id_usuario']} Liv: {em_['id_livro']}"),
+                    subtitle=ft.Text(f"{em_['data_inicio']} → {em_['data_fim']}"),
+                    trailing=ft.PopupMenuButton(
+                        icon=ft.Icons.MORE_VERT,
+                        items=[
+                            ft.PopupMenuItem(text="Detalhes", on_click=lambda _, e_=em_: emprestimo_exibir_detalhes(e)),
+                            ft.PopupMenuItem(text="Editar", on_click=lambda _, e_=em_: emprestimo_exibir_editar(e)),
+                        ],
+                    )
+                )
+            )
+        page.update()
 
     # Função para gerenciar rotas
     def gerencia_rotas(e):
@@ -286,17 +450,14 @@ def main(page: ft.Page):
                                 ft.ElevatedButton(
                                     text="Salvar",
                                     on_click=lambda _: salvar_livros(e)
-                                ),
-                                ft.ElevatedButton(
-                                    text="Exibir Lista",
-                                    on_click=lambda _: page.go("/livros")
                                 )
                             ]
                         )
                     ],
                 )
             )
-        if page.route == "/listar_livros" or page.route == "/editar_livros" or page.route == "/detalhar_livros":
+        if page.route == "/listar_livros" or page.route == "/editar_livros" or page.route == "/livros_detalhes":
+            exibir_livro(e)
             page.views.append(
                 ft.View(
                     "/listar_livros",
@@ -312,7 +473,9 @@ def main(page: ft.Page):
                     "/editar_livros",
                     [
                         ft.AppBar(title=ft.Text("Editar livro"), bgcolor=ft.Colors.SECONDARY_CONTAINER),
-                        txt_id,
+                        ft.Container(height=10),
+                        ft.Row(spacing=-2,controls=[ft.Text("Editando o id Nº "),txt_id]),
+                        ft.Container(height=10),
                         input_titulo,
                         input_autor,
                         input_ISBN,
@@ -387,6 +550,81 @@ def main(page: ft.Page):
                 ]
             )
         )
+        if page.route == "/cadastrar_usuario":
+            page.views.append(
+                ft.View(
+                    "/cadastrar_usuario",
+                    [
+                        ft.AppBar(title=ft.Text("Cadastro de Livro"), bgcolor=ft.Colors.SECONDARY_CONTAINER),
+                        ft.Text("Cadastrar Livro", size=20, weight=ft.FontWeight.BOLD),
+                        input_titulo,
+                        input_autor,
+                        input_ISBN,
+                        input_resumo,
+                        ft.Row(
+                            controls=[
+                                ft.ElevatedButton(
+                                    text="Salvar",
+                                    on_click=lambda _: salvar_livros(e)
+                                )
+                            ]
+                        )
+                    ],
+                )
+            )
+        if page.route == "/listar_usuario" or page.route == "/editar_usuario" or page.route == "/usuario_detalhes":
+            exibir_livro(e)
+            page.views.append(
+                ft.View(
+                    "/listar_usuario",
+                    [
+                        ft.AppBar(title=ft.Text("Lista de Livros"), bgcolor=ft.Colors.SECONDARY_CONTAINER),
+                        lv_livros
+                    ],
+                )
+            )
+        if page.route == "/editar_usuario":
+            page.views.append(
+                ft.View(
+                    "/editar_usuario",
+                    [
+                        ft.AppBar(title=ft.Text("Editar livro"), bgcolor=ft.Colors.SECONDARY_CONTAINER),
+                        ft.Container(height=10),
+                        ft.Row(spacing=-2,controls=[ft.Text("Editando o id Nº "),txt_id]),
+                        ft.Container(height=10),
+                        input_titulo,
+                        input_autor,
+                        input_ISBN,
+                        input_resumo,
+                        ft.Row(
+                            controls=[
+                                ft.ElevatedButton(
+                                    text="Salvar",
+                                    on_click=lambda _: editar_livros(int(txt_id.value))
+                                ),
+                                ft.ElevatedButton(
+                                    text="Exibir Lista",
+                                    on_click=lambda _: page.go("/listar_livros")
+                                )
+                            ]
+                        )
+                    ],
+                )
+            )
+        # Tela de Detalhes do Livro
+        if page.route == "/usuario_detalhes":
+            page.views.append(
+                ft.View(
+                    "/usuario_detalhes",
+                    [
+                        ft.AppBar(title=ft.Text("Detalhes do Livro"), bgcolor=ft.Colors.SECONDARY_CONTAINER),
+                        ft.Text("ISBN:", size=15),
+                        txt_ISBN,
+                        ft.Text("Resumo:", size=15),
+                        txt_resumo,
+                    ],
+                )
+            )
         if page.route == "/emprestimos":
             page.views.append(
                 ft.View(
@@ -435,20 +673,41 @@ def main(page: ft.Page):
         top_view = page.views[-1]
         page.go(top_view.route)
 
-    # Componentes de interface
-    msg_sucesso = ft.SnackBar(content=ft.Text("Livro salvo com sucesso!"), bgcolor=ft.Colors.GREEN)
-    msg_error = ft.SnackBar(content=ft.Text("Todos os campos são obrigatórios!"), bgcolor=ft.Colors.RED)
-
+    # ---- CAMPOS E COMPONENTES LIVROS ----
     input_titulo = ft.TextField(label="Nome do Livro")
     input_autor = ft.TextField(label="Autor")
     input_ISBN = ft.TextField(label="ISBN")
     input_resumo = ft.TextField(label="Resumo", multiline=True)
 
-    lv_livros = ft.ListView(height=500, spacing=1, divider_thickness=1)
+    lv_livros = ft.ListView(height=300)
+    txt_id = ft.Text("", visible=False)
+    txt_ISBN = ft.Text("", size=15)
+    txt_resumo = ft.Text("", size=15)
 
-    txt_id = ft.Text("", size=15, weight=ft.FontWeight.W_400)
-    txt_ISBN = ft.Text("", size=15, weight=ft.FontWeight.W_400)
-    txt_resumo = ft.Text("", size=15, weight=ft.FontWeight.W_400)
+    # ---- CAMPOS E COMPONENTES USUÁRIOS ----
+    input_nome = ft.TextField(label="Nome do Usuário")
+    input_email = ft.TextField(label="Email")
+    input_cpf = ft.TextField(label="Cadastro de Pessoa Física")
+
+    lv_usuarios = ft.ListView(height=300)
+    txt_user_id = ft.Text("", visible=False)
+    txt_user_nome = ft.Text("", size=15)
+    txt_user_email = ft.Text("", size=15)
+    txt_user_cpf = ft.Text("", size=15)
+
+    # ---- CAMPOS E COMPONENTES EMPRÉSTIMOS ----
+    input_e_user = ft.TextField(label="ID do Usuário")
+    input_e_livro = ft.TextField(label="ID do Livro")
+    input_data_inicio = ft.TextField(label="Data Início (yyyy-mm-dd)")
+    input_data_fim = ft.TextField(label="Data Fim (yyyy-mm-dd)")
+
+    lv_emprestimos = ft.ListView(height=300)
+    txt_emp_id = ft.Text("", visible=False)
+    txt_emp_detalhes = ft.Text("", size=15)
+
+    # ---- MENSAGENS GLOBAIS ----
+    msg_sucesso = ft.SnackBar(content=ft.Text("Sucesso!"), bgcolor=ft.Colors.GREEN)
+    msg_error = ft.SnackBar(content=ft.Text("Todos os campos são obrigatórios!"), bgcolor=ft.Colors.RED)
 
     # Eventos
     page.on_route_change = gerencia_rotas
