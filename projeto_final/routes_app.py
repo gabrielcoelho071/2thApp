@@ -23,7 +23,7 @@ def main(page: ft.Page):
     # Função que retorna somente o JSON da rota
     def get_info(endpoint):
         print(endpoint)
-        url = f"http://192.168.0.19:5000/{endpoint}"
+        url = f"http://10.135.232.17:5000/{endpoint}"
         print(url)
 
         resposta = requests.get(url)
@@ -39,7 +39,7 @@ def main(page: ft.Page):
 
     def post_livro(titulo, autor, ISBN, resumo):
 
-        url = "http://192.168.0.19:5000/livros"
+        url = "http://10.135.232.17:5000/livros"
         livro = {
             "titulo": titulo,
             "autor": autor,
@@ -56,7 +56,7 @@ def main(page: ft.Page):
             print("Erro ao parsear JSON da resposta:", e)
 
     def put_livro(id_, titulo, autor, ISBN, resumo):
-        url = f"http://192.168.0.19:5000/livros/{id_}"
+        url = f"http://10.135.232.17:5000/livros/{id_}"
         livro_atualizado = {
             "titulo": titulo,
             "autor": autor,
@@ -305,43 +305,21 @@ def main(page: ft.Page):
     # ------------------ CRUD DO EMPRESTIMO ------------------
 
     # Funções para Empréstimo
-    def post_emprestimo(id_usuario, id_livro, data_inicio, data_fim):
+    def post_emprestimo(id_usuario, id_livro, data_emprestimo, data_devolucao):
         url = "http://192.168.0.19:5000/emprestimos"
         dados = {
-            "id_usuario": id_usuario,
-            "id_livro": id_livro,
-            "data_inicio": data_inicio,
-            "data_fim": data_fim
+            "usuario_id": id_usuario,
+            "livro_id": id_livro,
+            "data_emprestimo": data_emprestimo,
+            "data_devolucao": data_devolucao
         }
         r = requests.post(url, json=dados);
         print(r.status_code, r.text)
 
-    def put_emprestimo(id_, id_usuario, id_livro, data_inicio, data_fim):
-        url = f"http://192.168.0.19:5000/emprestimos/{id_}"
-        dados = {
-            "id_usuario": id_usuario,
-            "id_livro": id_livro,
-            "data_inicio": data_inicio,
-            "data_fim": data_fim
-        }
-        r = requests.put(url, json=dados);
-        print(r.status_code, r.text)
-
-    txt_emp_id = ft.Text("", visible=False)
-    txt_emp_detalhes = ft.Text("", size=15)
-
     # Exibição e edição
     def emprestimo_exibir_detalhes(e_):
-        txt_emp_detalhes.value = f"Usuario: {e_['id_usuario']} — Livro: {e_['id_livro']} — De: {e_['data_inicio']} Até: {e_['data_fim']}"
+        txt_emp_detalhes.value = f"Usuario: {e_['usuario_id']} — Livro: {e_['livro_id']} — De: {e_['data_emprestimo']} Até: {e_['data_devolucao']}"
         page.go("/emprestimos_detalhes")
-
-    def emprestimo_exibir_editar(e_):
-        txt_emp_id.value = e_["id_emprestimo"]
-        input_e_user.value = str(e_["id_usuario"])
-        input_e_livro.value = str(e_["id_livro"])
-        input_data_inicio.value = e_["data_inicio"]
-        input_data_fim.value = e_["data_fim"]
-        page.go("/editar_emprestimos")
 
     def exibir_emprestimos(e):
         lv_emprestimos.controls.clear()
@@ -349,8 +327,8 @@ def main(page: ft.Page):
             lv_emprestimos.controls.append(
                 ft.ListTile(
                     leading=ft.Icon(ft.Icons.SHOW_CHART),
-                    title=ft.Text(f"Emp {em_['id_emprestimo']} Usu: {em_['id_usuario']} Liv: {em_['id_livro']}"),
-                    subtitle=ft.Text(f"{em_['data_inicio']} → {em_['data_fim']}"),
+                    title=ft.Text(f"Emp {em_['id_emprestimo']} Usu: {em_['usuario_id']} Liv: {em_['livro_id']}"),
+                    subtitle=ft.Text(f"{em_['data_emprestimo']} → {em_['data_devolucao']}"),
                     trailing=ft.PopupMenuButton(
                         icon=ft.Icons.MORE_VERT,
                         items=[
@@ -545,7 +523,7 @@ def main(page: ft.Page):
                             content=ft.Column(
                                 [
                                     ft.Image(
-                                        src=f"https://images.vexels.com/media/users/3/137047/isolated/preview/5831a17a290077c646a48c4db78a81bb-icone-azul-do-perfil-de-usuario.png",
+                                        src=f"https://cdn-icons-png.freepik.com/256/9055/9055398.png?semt=ais_hybrid",
                                         width=168,
                                         height=168,
                                         fit=ft.ImageFit.CONTAIN,
