@@ -333,7 +333,6 @@ def main(page: ft.Page):
                         icon=ft.Icons.MORE_VERT,
                         items=[
                             ft.PopupMenuItem(text="Detalhes", on_click=lambda _, e_=em_: emprestimo_exibir_detalhes(e)),
-                            ft.PopupMenuItem(text="Editar", on_click=lambda _, e_=em_: emprestimo_exibir_editar(e)),
                         ],
                     )
                 )
