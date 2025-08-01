@@ -580,7 +580,8 @@ def main(page: ft.Page):
                     "/listar_usuario",
                     [
                         ft.AppBar(title=ft.Text("Lista de Usuário"), bgcolor=ft.Colors.SECONDARY_CONTAINER),
-                        lv_usuarios
+                        lv_usuarios,
+                        ft.Switch()
                     ],
                 )
             )
