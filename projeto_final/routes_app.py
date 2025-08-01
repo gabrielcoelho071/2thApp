@@ -155,21 +155,37 @@ def main(page: ft.Page):
             dados = get_info(endpoint="livros")
 
             for livro in dados:
+                def toggle_status(e, livro=livro):
+                    novo_status = not livro["status_l"]
+                    print(novo_status)
+                    # Atualiza o status no banco via API PUT
+                    response = requests.put(
+                        f"http://localhost:5000/livros/{livro['id_livro']}",
+                        json={"status_l": novo_status}
+                    )
+                    if response.status_code == 200:
+                        print("emilio dies")
+                        livro["status_l"] = novo_status  # Atualiza o estado local
+                        page.snack_bar = ft.SnackBar(ft.Text("Status atualizado com sucesso!"))
+                        page.snack_bar.open = True
+                        page.update()
+
+                switch = ft.Switch(
+                    value=livro["status_l"],
+                    on_change=toggle_status
+                )
+
                 lv_livros.controls.append(
                     ft.ListTile(
                         leading=ft.Icon(ft.Icons.BOOK),
-                        title=ft.Text(f"Título: {livro["titulo"]}"),
-                        subtitle=ft.Text(f"Autor: {livro["autor"]}"),
-                        trailing=ft.PopupMenuButton(
-                            icon=ft.Icons.MORE_VERT,
-                            items=[
-                                ft.PopupMenuItem(text="Detalhes", on_click=lambda _, l=livro: livro_exibir_detalhes(l)),
-                                ft.PopupMenuItem(text="editar", on_click=lambda _, l=livro: livro_exibir_editar(l)),
-                            ],
-                        )
+                        title=ft.Text(f"Título: {livro['titulo']}"),
+                        subtitle=ft.Text(f"Autor: {livro['autor']}"),
+                        trailing=switch
                     )
                 )
+
             page.update()
+
 
         except Exception as e:
             print(f"Erro ao exibir a lista de livros: {e}")
@@ -579,8 +595,7 @@ def main(page: ft.Page):
                     "/listar_usuario",
                     [
                         ft.AppBar(title=ft.Text("Lista de Usuário"), bgcolor=ft.Colors.SECONDARY_CONTAINER),
-                        lv_usuarios,
-                        ft.Switch()
+                        lv_usuarios
                     ],
                 )
             )

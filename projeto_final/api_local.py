@@ -103,6 +103,34 @@ def get_livro():
 
 @app.route('/livros/<int:id_livro>', methods=['PUT'])
 def put_livro(id_livro):
+    db_session = local_session()
+    try:
+        data = request.get_json()
+        novo_status = data.get("status_l")
+
+        if novo_status is None:
+            return jsonify({"mensagem": "Campo 'status_l' é obrigatório."}), 400
+
+        livro = db_session.get(Livro, id_livro)
+        if not livro:
+            return jsonify({"mensagem": "Livro não encontrado."}), 404
+
+        livro.status_l = novo_status
+        db_session.commit()
+
+        return jsonify({"mensagem": "Status atualizado com sucesso."})
+
+    except ValueError:
+        return jsonify({"mensagem": "Formato inválido."}), 400
+    except TypeError:
+        return jsonify({'mensagem': 'Erro de integridade. Verifique os dados.'}), 400
+    except Exception as e:
+        return jsonify({"mensagem": str(e)}), 500
+    finally:
+        db_session.close()
+
+@app.route('/livros/<int:id_livro>', methods=['PUT'])
+def put_livro(id_livro):
     """
             Editar livros
 
