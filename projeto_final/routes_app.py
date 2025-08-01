@@ -23,7 +23,7 @@ def main(page: ft.Page):
     # Função que retorna somente o JSON da rota
     def get_info(endpoint):
         print(endpoint)
-        url = f"http://10.135.232.17:5000/{endpoint}"
+        url = f"http://10.135.235.26:5000/{endpoint}"
         print(url)
 
         resposta = requests.get(url)
@@ -39,7 +39,7 @@ def main(page: ft.Page):
 
     def post_livro(titulo, autor, ISBN, resumo):
 
-        url = "http://10.135.232.17:5000/livros"
+        url = "http://10.135.235.26:5000/livros"
         livro = {
             "titulo": titulo,
             "autor": autor,
@@ -56,7 +56,7 @@ def main(page: ft.Page):
             print("Erro ao parsear JSON da resposta:", e)
 
     def put_livro(id_, titulo, autor, ISBN, resumo):
-        url = f"http://10.135.232.17:5000/livros/{id_}"
+        url = f"http://10.135.235.26:5000/livros/{id_}"
         livro_atualizado = {
             "titulo": titulo,
             "autor": autor,

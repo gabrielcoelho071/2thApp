@@ -1,5 +1,5 @@
 # models_livro.py
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Boolean
 from sqlalchemy.orm import sessionmaker, scoped_session, declarative_base, relationship
 
 # Configuração do banco de dados
@@ -15,6 +15,7 @@ class Livro(Base):
     autor = Column(String, nullable=False, index=True)
     ISBN = Column(String(13), nullable=False, index=True)
     resumo = Column(String, index=True)
+    status_l = Column(Boolean, default=True, nullable=False, index=True)
 
     def __repr__(self):
         return f'<Livro(Título={self.titulo}, id{self.id_livro})>'
@@ -41,7 +42,8 @@ class Livro(Base):
             'titulo': self.titulo,
             'autor': self.autor,
             'ISBN': self.ISBN,
-            'resumo': self.resumo
+            'resumo': self.resumo,
+            'status_l': self.status_l
         }
         return var_livro
 
@@ -53,6 +55,7 @@ class Usuario(Base):
     email = Column(String, nullable=False)
     CPF = Column(String, nullable=False, unique=True)
     endereco = Column(String)
+    status_u = Column(Boolean, default=True, nullable=False, index=True)
 
     def __repr__(self):
         return f'<Usuário(nome={self.nome}, id{self.id_usuario})>'
@@ -79,7 +82,8 @@ class Usuario(Base):
             'nome': self.nome,
             'email': self.email,
             'CPF': self.CPF,
-            'endereco': self.endereco
+            'endereco': self.endereco,
+            'status_u': self.status_u
         }
         return var_usuario
 
@@ -93,6 +97,7 @@ class Emprestimo(Base):
     livros = relationship('Livro')
     usuario_id = Column(Integer, ForeignKey('usuarios.id_usuario'))
     usuarios = relationship('Usuario')
+    status_e = Column(Boolean, default=True, nullable=False, index=True)
 
     def __repr__(self):
         return f'<Empréstimo(livro={self.livro_id}, usuario{self.usuario_id})>'
@@ -119,7 +124,8 @@ class Emprestimo(Base):
             'data_emprestimo': self.data_emprestimo,
             'data_devolucao': self.data_devolucao,
             'livro': self.livro_id,
-            'usuario': self.usuario_id
+            'usuario': self.usuario_id,
+            'status_e': self.status_e
         }
         return var_emprestimo
 
