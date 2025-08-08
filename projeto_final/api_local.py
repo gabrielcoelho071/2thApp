@@ -101,8 +101,8 @@ def get_livro():
         db_session.close()
 
 
-@app.route('/livros/<int:id_livro>', methods=['PUT'])
-def put_livro(id_livro):
+@app.route('/livros/deactivate/<int:id_livro>', methods=['PUT'])
+def deactivate_livro(id_livro):
     db_session = local_session()
     try:
         data = request.get_json()

@@ -143,32 +143,27 @@ def main(page: ft.Page):
             finally:
                 session.close()  # Fechar a sessão
 
-    #Função para exibir o Livro
     def exibir_livro(e):
         lv_livros.controls.clear()
 
-        # Criando uma nova sessão
-        session = create_session()
-
         try:
-            # Carregando os livros do banco de dados
+            # Carrega os livros do banco de dados via API
             dados = get_info(endpoint="livros")
 
             for livro in dados:
                 def toggle_status(e, livro=livro):
                     novo_status = not livro["status_l"]
-                    print(novo_status)
-                    # Atualiza o status no banco via API PUT
                     response = requests.put(
-                        f"http://localhost:5000/livros/{livro['id_livro']}",
+                        f"http://localhost:5000/livros/deactivate/{livro['id_livro']}",
                         json={"status_l": novo_status}
                     )
                     if response.status_code == 200:
-                        print("emilio dies")
-                        livro["status_l"] = novo_status  # Atualiza o estado local
+                        livro["status_l"] = novo_status
                         page.snack_bar = ft.SnackBar(ft.Text("Status atualizado com sucesso!"))
-                        page.snack_bar.open = True
-                        page.update()
+                    else:
+                        page.snack_bar = ft.SnackBar(ft.Text("Erro ao atualizar o status."), bgcolor="red")
+                    page.snack_bar.open = True
+                    page.update()
 
                 switch = ft.Switch(
                     value=livro["status_l"],
@@ -186,11 +181,11 @@ def main(page: ft.Page):
 
             page.update()
 
-
         except Exception as e:
             print(f"Erro ao exibir a lista de livros: {e}")
-        finally:
-            session.close()  # Fechar a sessão
+            page.snack_bar = ft.SnackBar(ft.Text("Erro ao carregar os livros."), bgcolor="red")
+            page.snack_bar.open = True
+            page.update()
 
     # ------------------ CRUD DO USUARIO ------------------
 
