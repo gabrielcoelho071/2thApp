@@ -101,21 +101,15 @@ def get_livro():
         db_session.close()
 
 
-@app.route('/livros/deactivate/<int:id_livro>', methods=['PUT'])
-def deactivate_livro(id_livro):
+@app.route('/livros/off/<int:id_livro>', methods=['PUT'])
+def off_livro(id_livro):
     db_session = local_session()
     try:
-        data = request.get_json()
-        novo_status = data.get("status_l")
-
-        if novo_status is None:
-            return jsonify({"mensagem": "Campo 'status_l' é obrigatório."}), 400
-
         livro = db_session.get(Livro, id_livro)
         if not livro:
             return jsonify({"mensagem": "Livro não encontrado."}), 404
 
-        livro.status_l = novo_status
+        livro.status_l = not livro.status_l
         db_session.commit()
 
         return jsonify({"mensagem": "Status atualizado com sucesso."})
